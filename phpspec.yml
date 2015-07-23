@@ -1,0 +1,7 @@
+formatter.name: pretty
+
+suites:
+    main:
+        namespace: Vscn
+        psr4_prefix: Vscn
+        src_path: src
