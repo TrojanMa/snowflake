@@ -30,6 +30,11 @@ class IdWorkerSpec extends ObjectBehavior
     function it_return_an_accurate_timestamp()
     {
         $t = floor(microtime(true) * 1000);
+
+        $this->beAnInstanceOf('Vscn\Snowflake\EasyTimeWorker');
+        $this->beConstructedWith(1, 1);
+        $this->timestamp = $t;
+
         $this->getTimestamp()->shouldBe($t);
     }
 
