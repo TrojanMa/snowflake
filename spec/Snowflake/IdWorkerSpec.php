@@ -113,6 +113,19 @@ class IdWorkerSpec extends ObjectBehavior
 
     }
 
+    function it_generate_increasing_ids()
+    {
+        $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+        $this->beConstructedWith(1,1);
+
+        $lastId = 0;
+
+        for ($i = 0; $i < 100; $i++) {
+            $this->nextId()->shouldBeGreaterThan($lastId);
+            $lastId = $this->lastId;
+        }
+    }
+
     public function getMatchers()
     {
         return [
@@ -120,6 +133,10 @@ class IdWorkerSpec extends ObjectBehavior
             {
                 return (($subject & $mask) >> $shiftBits) == $input;
             },
+            'beGreaterThan' => function ($subject, $val)
+            {
+                return $subject > $val;
+            }
         ];
     }
 }
@@ -130,4 +147,13 @@ class EasyTimeWorker extends IdWorker
 {
     public $timestamp;
     public function getTimestamp() { return $this->timestamp; }
+}
+
+class KeepLastIdWorker extends IdWorker
+{
+    public $lastId;
+    public function nextId()
+    {
+        return $this->lastId = parent::nextId();
+    }
 }
