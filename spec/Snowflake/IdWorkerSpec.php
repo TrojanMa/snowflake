@@ -126,6 +126,22 @@ class IdWorkerSpec extends ObjectBehavior
         }
     }
 
+    function it_sleep_if_we_would_rollover_twice_in_the_same_millisecond()
+    {
+        $this->beAnInstanceOf('Vscn\Snowflake\WalkingIdWorker');
+        $this->beConstructedWith(1, 1);
+
+        $this->timestamp = array(null, 2, 2, 3);
+
+        $this->seq = 4096;
+        $this->nextId();
+
+        $this->seq = 4096;
+        $this->nextId();
+
+        $this->getSlept()->shouldBe(1);
+    }
+
     public function getMatchers()
     {
         return [
@@ -155,5 +171,32 @@ class KeepLastIdWorker extends IdWorker
     public function nextId()
     {
         return $this->lastId = parent::nextId();
+    }
+}
+
+class WalkingIdWorker extends EasyTimeWorker
+{
+    public $slept = 0;
+    public $seq;
+
+    public function nextSequence()
+    {
+        return $this->seq;
+    }
+
+    public function getTimestamp()
+    {
+        return next($this->timestamp);
+    }
+
+    protected function tilNextMillis($lastTimestamp)
+    {
+        $this->slept += 1;
+        return parent::tilNextMillis($lastTimestamp);
+    }
+
+    public function getSlept()
+    {
+        return $this->slept;
     }
 }

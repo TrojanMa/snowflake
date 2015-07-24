@@ -12,6 +12,7 @@ class IdWorker
     protected $workerId;
     protected $datacenterId;
     protected $sequence;
+    protected $lastTimestamp = -1;
 
     public function __construct($workerId, $datacenterId, $sequence = 0)
     {
@@ -27,10 +28,28 @@ class IdWorker
      */
     public function nextId()
     {
-        $t = floor($this->getTimestamp() - self::TWEPOC) << $this->timestampLeftShift();
+        $timestamp = $this->getTimestamp();
+
+        if ($timestamp < $this->lastTimestamp) {
+            throw new InvalidSystemClockException(sprintf("Clock moved backwards. Refusing to generate id for %d milliseconds", ($this->lastTimestamp - $timestamp)));
+        }
+
+        if ($timestamp == $this->lastTimestamp) {
+            $sequence = $this->nextSequence() & $this->sequenceMask();
+
+            // sequence rollover, wait til next millisecond
+            if ($sequence == 0) {
+                $timestamp = $this->tilNextMillis($this->lastTimestamp);
+            }
+        } else {
+            $this->sequence = 0;
+            $sequence = $this->nextSequence();
+        }
+
+        $this->lastTimestamp = $timestamp;
+        $t = floor($timestamp - self::TWEPOC) << $this->timestampLeftShift();
         $dc = $this->getDatacenterId() << $this->datacenterIdShift();
         $worker = $this->getWorkerId() << $this->workerIdShift();
-        $sequence = ($this->sequence++) & $this->sequenceMask();
 
         return PHP_INT_SIZE === 4 ? $this->mintId32($t, $dc, $worker, $sequence) : $this->mintId64($t, $dc, $worker, $sequence);
     }
@@ -63,6 +82,16 @@ class IdWorker
     public function getDatacenterId()
     {
         return $this->datacenterId;
+    }
+
+    /**
+     * Increments and return the sequence.
+     *
+     * @return integer
+     */
+    protected function nextSequence()
+    {
+        return $this->sequence++;
     }
 
     private function maxWorkerId()
@@ -103,5 +132,15 @@ class IdWorker
     private function mintId64($timestamp, $datacenterId, $workerId, $sequence)
     {
         return (string)$timestamp | $datacenterId | $workerId | $sequence;
+    }
+
+    protected function tilNextMillis($lastTimestamp)
+    {
+        $timestamp = $this->getTimestamp();
+        while ($timestamp <= $lastTimestamp) {
+            $timestamp = $this->getTimestamp();
+        }
+
+        return $timestamp;
     }
 }
