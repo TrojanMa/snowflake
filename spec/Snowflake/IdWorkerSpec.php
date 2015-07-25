@@ -142,6 +142,64 @@ class IdWorkerSpec extends ObjectBehavior
         $this->getSlept()->shouldBe(1);
     }
 
+    // function it_generate_only_unique_ids()
+    // {
+    //     $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+    //     $this->beConstructedWith(31, 31);
+
+    //     $max = 11000;
+    //     $ids = [];
+
+    //     for ($i = 0; $i < $max; $i++) {
+    //         $this->nextId()->shouldBeUnique($ids);
+    //         $ids[] = $this->lastId;
+    //     }
+
+    //     unset($ids);
+    // }
+
+    function it_generate_ids_over_50_billion()
+    {
+        $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+        $this->beConstructedWith(31, 31);
+
+        $this->nextId()->shouldBeGreaterThan(50000000000);
+    }
+
+    function it_generate_only_unique_ids_even_when_time_goes_backwards()
+    {
+        $this->beAnInstanceOf('Vscn\Snowflake\StaticTimeWorker');
+        $this->beConstructedWith(31, 31);
+        $mask = -1 ^ (-1 << 12);
+
+        $this->getSequence()->shouldBe(0);
+        $this->nextId()->shouldBeProperlyMasked(0, $mask, 0);
+
+        $this->getSequence()->shouldBe(1);
+        $this->nextId()->shouldBeProperlyMasked(1, $mask, 0);
+
+        // now time go backwards
+        $this->timestamp = 0;
+        $this->getSequence()->shouldBe(2); // always move forward.
+        $this->shouldThrow('Vscn\Snowflake\InvalidSystemClockException')->duringNextId();
+        $this->getSequence()->shouldBe(2);
+
+        $this->timestamp = 1;
+        $this->nextId()->shouldBeProperlyMasked(2, $mask, 0);
+    }
+
+    function it_throws_exception_if_worker_id_is_invalid()
+    {
+        $this->shouldThrow('\InvalidArgumentException')->during('__construct', [-1, 1]);
+        $this->shouldThrow('\InvalidArgumentException')->during('__construct', [32, 1]);
+    }
+
+    function it_throws_exception_if_datacenter_id_is_invalid()
+    {
+        $this->shouldThrow('\InvalidArgumentException')->during('__construct', [1, -1]);
+        $this->shouldThrow('\InvalidArgumentException')->during('__construct', [1, 32]);
+    }
+
     public function getMatchers()
     {
         return [
@@ -149,9 +207,17 @@ class IdWorkerSpec extends ObjectBehavior
             {
                 return (($subject & $mask) >> $shiftBits) == $input;
             },
+            'beSameBits' => function ($subject, $shift, $expected)
+            {
+                return ($subject >> $shift) == $expected;
+            },
             'beGreaterThan' => function ($subject, $val)
             {
                 return $subject > $val;
+            },
+            'beUnique' => function ($subject, $haystack)
+            {
+                return ! in_array($subject, $haystack);
             }
         ];
     }
@@ -163,6 +229,15 @@ class EasyTimeWorker extends IdWorker
 {
     public $timestamp;
     public function getTimestamp() { return $this->timestamp; }
+}
+
+class StaticTimeWorker extends IdWorker
+{
+    public $timestamp = 1;
+    public function getTimestamp()
+    {
+        return $this->timestamp + self::TWEPOC;
+    }
 }
 
 class KeepLastIdWorker extends IdWorker

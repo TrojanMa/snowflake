@@ -2,6 +2,8 @@
 
 namespace Vscn\Snowflake;
 
+use InvalidArgumentException;
+
 class IdWorker
 {
     const WORKER_ID_BITS     = 5;
@@ -16,8 +18,8 @@ class IdWorker
 
     public function __construct($workerId, $datacenterId, $sequence = 0)
     {
-        $this->workerId     = $workerId;
-        $this->datacenterId = $datacenterId;
+        $this->setWorkerId($workerId);
+        $this->setDatacenterId($datacenterId);
         $this->sequence     = $sequence;
     }
 
@@ -25,6 +27,7 @@ class IdWorker
      * Return the next Snowflake ID.
      *
      * @return biginteger
+     * @throws Vscn\Snowflake\InvalidSystemClockException
      */
     public function nextId()
     {
@@ -85,6 +88,31 @@ class IdWorker
     }
 
     /**
+     * Get current sequence number
+     *
+     * @return integer
+     */
+    public function getSequence()
+    {
+        return $this->sequence;
+    }
+
+    /**
+     * Makes the worker wait til next millisecond.
+     *
+     * @return integer
+     */
+    protected function tilNextMillis($lastTimestamp)
+    {
+        $timestamp = $this->getTimestamp();
+        while ($timestamp <= $lastTimestamp) {
+            $timestamp = $this->getTimestamp();
+        }
+
+        return $timestamp;
+    }
+
+    /**
      * Increments and return the sequence.
      *
      * @return integer
@@ -134,13 +162,33 @@ class IdWorker
         return (string)$timestamp | $datacenterId | $workerId | $sequence;
     }
 
-    protected function tilNextMillis($lastTimestamp)
+    /**
+     * Set worker Id
+     *
+     * @param integer $workerId
+     * @throws \InvalidArgumentException
+     */
+    private function setWorkerId($workerId)
     {
-        $timestamp = $this->getTimestamp();
-        while ($timestamp <= $lastTimestamp) {
-            $timestamp = $this->getTimestamp();
+        if ($workerId > $this->maxWorkerId() || $workerId < 0) {
+            throw new InvalidArgumentException(sprintf("worker id can't be greater than %d or less than 0", $this->maxWorkerId()));
         }
 
-        return $timestamp;
+        $this->workerId = $workerId;
+    }
+
+    /**
+     * Set datacenter Id
+     *
+     * @param integer $datacenterId
+     * @throws \InvalidArgumentException
+     */
+    private function setDatacenterId($datacenterId)
+    {
+        if ($datacenterId > $this->maxDatacenterId() || $datacenterId < 0) {
+            throw new InvalidArgumentException(sprintf("datacenter id can't be greater than %d or less than 0", $this->maxDatacenterId()));
+        }
+
+        $this->datacenterId = $datacenterId;
     }
 }
