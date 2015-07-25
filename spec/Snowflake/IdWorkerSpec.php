@@ -131,7 +131,7 @@ class IdWorkerSpec extends ObjectBehavior
         $this->beAnInstanceOf('Vscn\Snowflake\WalkingIdWorker');
         $this->beConstructedWith(1, 1);
 
-        $this->timestamp = array(null, 2, 2, 3);
+        $this->timestamp = array(null, 2, 2, 2, 3);
 
         $this->seq = 4096;
         $this->nextId();
