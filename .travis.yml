@@ -7,15 +7,8 @@ php:
   - 7.0
   - hhvm
 
-matrix:
-    allow_failures:
-        - php: 7.0
-        - php: hhvm
-
 sudo: false
 
 install: travis_retry composer install --no-interaction --prefer-source --dev
 
 script: vendor/bin/phpspec run --no-interaction --verbose
-
-after_script: php vendor/bin/coveralls

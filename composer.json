@@ -1,7 +1,7 @@
 {
-    "name": "vscn/snowflake",
+    "name": "lucasvscn/snowflake",
     "description": "Snowflake PHP",
-    "keywords": ["twitter-snowflake", "uuid", "generator"],
+    "keywords": ["twitter-snowflake", "uuid", "generator", "id generator"],
     "license": "Apache-2.0",
     "support": {
         "issues": "https://github.com/lucasvscn/snowflake/issues",
@@ -15,7 +15,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Vscn\\": "src"
+            "LucasVscn\\": "src"
         }
     },
     "require": {
@@ -24,10 +24,7 @@
         "symfony/process": "~2.0"
     },
     "require-dev": {
-        "phpspec/phpspec": "^2.2",
-        "phpspec/nyan-formatters": "^1.0@dev",
-        "henrikbjorn/phpspec-code-coverage": "^1.0@dev",
-        "satooshi/php-coveralls": "dev-master"
+        "phpspec/phpspec": "^2.2"
     },
     "minimum-stability": "dev"
 }

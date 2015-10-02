@@ -1,6 +1,6 @@
 <?php
 
-namespace spec\Vscn\Snowflake;
+namespace spec\LucasVscn\Snowflake;
 
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
@@ -19,7 +19,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     function it_is_initializable()
     {
-        $this->shouldHaveType('Vscn\Snowflake\IdWorker');
+        $this->shouldHaveType('LucasVscn\Snowflake\IdWorker');
     }
 
     function it_genereate_an_id()
@@ -31,7 +31,7 @@ class IdWorkerSpec extends ObjectBehavior
     {
         $t = floor(microtime(true) * 1000);
 
-        $this->beAnInstanceOf('Vscn\Snowflake\EasyTimeWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\EasyTimeWorker');
         $this->beConstructedWith(1, 1);
         $this->timestamp = $t;
 
@@ -85,14 +85,14 @@ class IdWorkerSpec extends ObjectBehavior
         $datacenterId = 31;
         $mask = 0xFFFFFFFFFFC00000;
 
-        $this->beAnInstanceOf('Vscn\Snowflake\EasyTimeWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\EasyTimeWorker');
         $this->beConstructedWith($workerId, $datacenterId);
 
         for ($i = 0; $i < 1; $i++) {
             $timestamp = floor(microtime(true) * 1000);
             $this->timestamp = $timestamp;
             $this->getTimestamp()->shouldBe($timestamp);
-            $this->nextId()->shouldBeProperlyMasked(($timestamp - \Vscn\Snowflake\IdWorker::TWEPOC), $mask, 22);
+            $this->nextId()->shouldBeProperlyMasked(($timestamp - \LucasVscn\Snowflake\IdWorker::TWEPOC), $mask, 22);
         }
     }
 
@@ -115,7 +115,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     function it_generate_increasing_ids()
     {
-        $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\KeepLastIdWorker');
         $this->beConstructedWith(1,1);
 
         $lastId = 0;
@@ -128,7 +128,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     function it_sleep_if_we_would_rollover_twice_in_the_same_millisecond()
     {
-        $this->beAnInstanceOf('Vscn\Snowflake\WalkingIdWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\WalkingIdWorker');
         $this->beConstructedWith(1, 1);
 
         $this->timestamp = array(null, 2, 2, 2, 3);
@@ -144,7 +144,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     // function it_generate_only_unique_ids()
     // {
-    //     $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+    //     $this->beAnInstanceOf('LucasVscn\Snowflake\KeepLastIdWorker');
     //     $this->beConstructedWith(31, 31);
 
     //     $max = 11000;
@@ -160,7 +160,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     function it_generate_ids_over_50_billion()
     {
-        $this->beAnInstanceOf('Vscn\Snowflake\KeepLastIdWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\KeepLastIdWorker');
         $this->beConstructedWith(31, 31);
 
         $this->nextId()->shouldBeGreaterThan(50000000000);
@@ -168,7 +168,7 @@ class IdWorkerSpec extends ObjectBehavior
 
     function it_generate_only_unique_ids_even_when_time_goes_backwards()
     {
-        $this->beAnInstanceOf('Vscn\Snowflake\StaticTimeWorker');
+        $this->beAnInstanceOf('LucasVscn\Snowflake\StaticTimeWorker');
         $this->beConstructedWith(31, 31);
         $mask = -1 ^ (-1 << 12);
 
@@ -181,7 +181,7 @@ class IdWorkerSpec extends ObjectBehavior
         // now time go backwards
         $this->timestamp = 0;
         $this->getSequence()->shouldBe(2); // always move forward.
-        $this->shouldThrow('Vscn\Snowflake\InvalidSystemClockException')->duringNextId();
+        $this->shouldThrow('LucasVscn\Snowflake\InvalidSystemClockException')->duringNextId();
         $this->getSequence()->shouldBe(2);
 
         $this->timestamp = 1;
@@ -223,7 +223,7 @@ class IdWorkerSpec extends ObjectBehavior
     }
 }
 
-namespace Vscn\Snowflake;
+namespace LucasVscn\Snowflake;
 
 class EasyTimeWorker extends IdWorker
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vscn\Snowflake;
+namespace LucasVscn\Snowflake;
 
 use InvalidArgumentException;
 
@@ -27,7 +27,7 @@ class IdWorker
      * Return the next Snowflake ID.
      *
      * @return biginteger
-     * @throws Vscn\Snowflake\InvalidSystemClockException
+     * @throws LucasVscn\Snowflake\InvalidSystemClockException
      */
     public function nextId()
     {

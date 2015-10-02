@@ -4,7 +4,7 @@ require 'vendor/autoload.php';
 
 // Test how fast the IDs can be generated.
 
-$idW = new Vscn\Snowflake\IdWorker(31, 31);
+$idW = new LucasVscn\Snowflake\IdWorker(31, 31);
 $t1  = $idW->getTimestamp();
 $max = 1000000;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vscn\Snowflake;
+namespace LucasVscn\Snowflake;
 
 use Exception;
 
