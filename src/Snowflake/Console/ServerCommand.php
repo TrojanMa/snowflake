@@ -4,6 +4,7 @@ namespace LucasVscn\Snowflake\Console;
 
 use ZMQContext, ZMQSocket, ZMQ;
 use LucasVscn\Snowflake\IdWorker;
+use LucasVscn\Snowflake\Server as SnowflakeServer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -35,27 +36,10 @@ class ServerCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $idW = new IdWorker($input->getOption('worker'), $input->getOption('dc'));
-
-        $context = new ZMQContext();
-        $receiver = new ZMQSocket($context, ZMQ::SOCKET_REP);
-
-        $bindTo = 'tcp://*:' . $input->getOption('port');
-        $output->writeln("Binding to {$bindTo}");
-        $receiver->bind($bindTo);
-
-        while (TRUE) {
-            $msg = $receiver->recv();
-            switch ($msg) {
-                case 'NEXT':
-                        $response = $idW->nextId();
-                    break;
-                default:
-                    $response = 'UNKNOWN COMMAND';
-                    break;
-            }
-            $receiver->send($response);
-        }
-
+        (new SnowflakeServer(
+            $input->getOption('worker'),
+            $input->getOption('dc'),
+            $input->getOption('port')
+        ))->run();
     }
 }

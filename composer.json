@@ -20,11 +20,13 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "ext-zmq": "*",
         "symfony/console": "~2.0"
     },
     "require-dev": {
         "phpspec/phpspec": "^2.2"
+    },
+    "suggest": {
+        "ext-zmq": "Allows to use the ZMQ Server and Client."
     },
     "minimum-stability": "dev",
     "bin": [

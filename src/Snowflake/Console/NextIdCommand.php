@@ -4,6 +4,7 @@ namespace LucasVscn\Snowflake\Console;
 
 use ZMQContext, ZMQSocket, ZMQ;
 use LucasVscn\Snowflake\IdWorker;
+use LucasVscn\Snowflake\Client as SnowflakeClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -33,15 +34,11 @@ class NextIdCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $context = new ZMQContext();
-        $socket = new ZMQSocket($context, ZMQ::SOCKET_REQ);
+        $id = (new SnowflakeClient(
+                'localhost',
+                $input->getOption('port'))
+            )->nextId();
 
-        $port = $input->getOption('port');
-        $socket->connect("tcp://localhost:{$port}");
-
-        $socket->setSockOpt(ZMQ::SOCKOPT_LINGER, 0);
-
-        $socket->send('NEXT');
-        $output->writeln($socket->recv());
+        $output->writeln($id);
     }
 }
