@@ -10,7 +10,7 @@ use ZMQContext, ZMQSocket, ZMQ;
  *
  * @package LucasVscn\Snowflake
  */
-class Client
+class Client implements IdGenerator
 {
     protected $socket;
 
@@ -33,7 +33,7 @@ class Client
     /**
      * Asks the server for a new ID
      *
-     * @return biginteger
+     * @return string - biginteger that represents generated id.
      */
     public function nextId()
     {
