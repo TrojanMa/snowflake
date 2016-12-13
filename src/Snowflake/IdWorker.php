@@ -4,7 +4,7 @@ namespace LucasVscn\Snowflake;
 
 use InvalidArgumentException;
 
-class IdWorker
+class IdWorker implements IdGenerator
 {
     const WORKER_ID_BITS     = 5;
     const DATACENTER_ID_BITS = 5;
@@ -26,8 +26,8 @@ class IdWorker
     /**
      * Return the next Snowflake ID.
      *
-     * @return biginteger
-     * @throws LucasVscn\Snowflake\InvalidSystemClockException
+     * @return string - biginteger that represents generated id.
+     * @throws InvalidSystemClockException
      */
     public function nextId()
     {
